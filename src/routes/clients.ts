@@ -116,16 +116,18 @@ router.post('/:id/message', async (ctx: Context) => {
     }
 
     const { text, sentAt, role } = ctx.request.body;
-    if (!text || !sentAt || !role) {
+    if (!text|| !role) {
       ctx.status = 400;
       ctx.body = { error: 'Text, sentAt, and role are required' };
       return;
     }
 
+    const sentAtValue = sentAt ? new Date(sentAt) : new Date();
+
     const message = await Message.create({
       clientId,
       text,
-      sentAt,
+      sentAt: sentAtValue,
       role,
     });
 
