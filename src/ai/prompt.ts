@@ -1,57 +1,100 @@
-import OpenAI from "openai";
+import 'dotenv/config';
+import { MessageAttributes } from '../models/message';
+import { OpenAI } from "openai";
 import { Client } from "../models/client";
-import { Debt } from "../models/debt";
+import { Message } from "../models/message";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
-const autosDisponibles = [
-  "Toyota Corolla 2024", "Hyundai Tucson 2024", "Kia Sportage 2024",
-  "Chevrolet Tracker 2024", "Mazda CX-5 2024", "Nissan X-Trail 2024",
-  "Peugeot 3008 2024", "Ford Ranger 2024", "Mitsubishi L200 2024",
-  "Volkswagen T-Cross 2024", "Honda HR-V 2024", "Suzuki Vitara 2024",
-  "Renault Koleos 2024", "Subaru Forester 2024", "Jeep Compass 2024",
-  "Chery Tiggo 8 Pro 2024", "MG HS 2024", "BYD Song Plus 2024"
-];
+export const systemMsg = {
+  role: "system" as const,
+  content: `
+Actúa como SERGIO, asesor automotriz humano en Chile (no digas que eres IA).
+Estilo: WhatsApp, natural, cálido, 1–2 líneas (máximo 220 caracteres). Español chileno.
 
-export async function generateAIMessage(client: Client & { Debts?: Debt[] }) {
-  const hasDebt = (client.Debts ?? []).length > 0;
+Tu objetivo en cada respuesta:
+1) Reconoce el contexto del cliente y/o su última intención.
+2) Sugiere 1 opción concreta (marca+modelo) o haz 1 pregunta clave si faltan datos.
+3) Menciona sucursales relevantes SOLO si aporta (máx 1).
+4) Cierra con un CTA claro (ej: "¿Te reservo una visita?").
 
-  const prompt = `
-Eres Sergio, un asesor automotriz amable y persuasivo que trabaja en concesionarias de Chile
-(Pompeyo Carrasco, Salfa Automotriz, Aventura Motors, Rosselot y Astara).
+Catálogo permitido (no inventes otros):
+- Toyota: Hilux, Corolla
+- Hyundai: Tucson, Grand i10
+- Nissan: Versa, X-Trail
+- Chevrolet: Sail, Tracker
+- Peugeot: 208, 3008
 
-Tu objetivo es vender un auto nuevo a ${client.name} (RUT: ${client.rut}).
+Sucursales disponibles: Salfa Automotriz, Aventura Motors, Rosselot.
 
-Responde en estilo chat de WhatsApp, breve y natural (4–6 líneas), como en este ejemplo:
+Financiamiento:
+- Si el cliente NO tiene deudas morosas: puedes ofrecer financiamiento.
+- Si tiene deudas morosas: NO ofrezcas financiamiento; sugiere alternativas al contado o regularización primero.
 
-[Ejemplo]
-Cliente: ¡Hola! Quiero más información sobre Chery Tiggo 2 Pro
-Sergio: ¡Hola Nini! Soy Sergio, asesor digital de Zeller. El Chery Tiggo 2 Pro es un auto moderno, con gran eficiencia y diseño. 
-Sergio: Aquí tienes opciones disponibles: 
-1. Chery Tiggo 2 Pro 1.5 MT GL 2025 – desde $8.990.000
-2. Chery Tiggo 2 Pro GLS MT Limited 2025 – desde $9.290.000
-3. Chery Tiggo 2 Pro Max GL MT 2025 – desde $9.790.000
-Sergio: Los precios son referenciales y deben confirmarse en la sucursal. ¿Quieres que te agende una visita esta semana? 😊
+Tono:
+- Cercano y profesional, sin jerga técnica innecesaria.
+- Máx 2 emojis y solo si aportan (no obligatorio).
+- Evita párrafos largos; 1–2 líneas como máximo.
 
-[Fin del ejemplo]
+No inventes datos, no prometas precios ni stock. Si falta info clave (presupuesto, uso, ciudad), pregunta SOLO 1 cosa.
+`
+};
 
-Instrucciones para tu respuesta:
-- Siempre saluda al cliente por su nombre y preséntate (ej: “¡Hola Juan! Soy Sergio…”).
-- Escoge un modelo entre: ${autosDisponibles.join(", ")} según lo que mencione el cliente; si no dice nada, pregúntale qué busca.
-- Usa precios **referenciales** (ej: “desde $XX.XXX.XXX”) y aclara que deben confirmarse en la sucursal.
-- Si el cliente tiene deudas morosas (${hasDebt ? "sí" : "no"}), 
-  ${hasDebt ? "NO ofrezcas financiamiento" : "invítalo a aprovechar financiamiento atractivo"}.
-- Recomienda agendar visita en alguna sucursal (Pompeyo Carrasco, Salfa Automotriz, Aventura Motors, Rosselot o Astara).
-- Escribe de manera cercana y persuasiva, como un humano en WhatsApp.
-  `;
+export function hasDelinquency(debts: { dueDate: Date }[] = [], now = new Date()) {
+  return debts.some(d => new Date(d.dueDate).getTime() < now.getTime());
+}
 
+export function mapHistoryToOpenAI(messages: MessageAttributes[]) {
+  return messages
+    .sort((a,b) => +new Date(a.sentAt) - +new Date(b.sentAt))
+    .map(m => m.role === "client"
+      ? { role: "user" as const, content: m.text }
+      : { role: "assistant" as const, content: m.text }
+    );
+}
+
+export async function generateMessageForClient(client: Client): Promise<Message> {
+  const name = client?.name ?? "cliente";
+  const morosa = hasDelinquency((client as any)?.Debts ?? []);
+  const financeFlag = morosa ? "NO_ELEGIBLE_FINANCIAMIENTO" : "ELEGIBLE_FINANCIAMIENTO";
+
+  const history = mapHistoryToOpenAI(client.Messages ?? []).slice(-20);
+  console.log("history", history);
+  const contextMsg = {
+    role: "user" as const,
+    content: JSON.stringify({
+      client: { id: client.id, name },
+      policy: {
+        financing: financeFlag,
+      },
+      guidance: "Responde en 1–2 líneas, sugiere 1 modelo o 1 pregunta, breve."
+    })
+  };
+
+  const messages = [systemMsg, contextMsg, ...history];
+
+  // Set up OpenAI client
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) throw new Error("Missing OPENAI_API_KEY");
+
+  const openai = new OpenAI({ apiKey });
+
+  // Call model
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [{ role: "system", content: prompt }],
-    temperature: 0.9,
+    model: "gpt-4o-mini",
+    temperature: 0,
+    max_tokens: 100,
+    messages,
   });
 
-  return completion.choices[0]?.message?.content?.trim() || "Hola, soy Sergio. 🚗";
+  const text = completion.choices?.[0]?.message?.content?.trim() ?? "";
+  if (!text) throw new Error("No text generated");
+
+  // Persist new agent message
+  const now = new Date();
+  return await Message.create({
+    clientId: client.id,
+    role: "agent",
+    text,
+    sentAt: now,
+  });
 }

@@ -1,9 +1,11 @@
 const Router = require('koa-router');
+import 'dotenv/config';
+import OpenAI from "openai";
 import { Context } from 'koa';
 import { Client } from '../models/client';
 import { Message } from '../models/message';
 import { Debt } from '../models/debt';
-import { generateAIMessage } from "../ai/prompt";
+import { generateMessageForClient } from '../ai/prompt';
 
 const router = new Router();
 
@@ -137,39 +139,40 @@ router.post('/:id/message', async (ctx: Context) => {
 });
 
 router.get("/:id/generateMessage", async (ctx: Context) => {
+  const clientId = Number(ctx.params.id);
+  if (!Number.isFinite(clientId)) {
+    ctx.status = 400;
+    ctx.body = { error: "Invalid client ID" };
+    return;
+  }
+
+  const client = await Client.findByPk(clientId, {
+    include: [Message],
+    order: [[Message, "sentAt", "ASC"]],
+  });
+  if (!client) {
+    ctx.status = 404;
+    ctx.body = { error: "Client not found" };
+    return;
+  }
+
   try {
-    const clientId = Number(ctx.params.id);
-    if (isNaN(clientId)) {
-      ctx.status = 400;
-      ctx.body = { error: "Invalid client ID" };
-      return;
-    }
+    const created = await generateMessageForClient(client);
 
-    const client = await Client.findByPk(clientId, {
-      include: [{ model: Debt }],
-    });
-
-    if (!client) {
-      ctx.status = 404;
-      ctx.body = { error: "Client not found" };
-      return;
-    }
-
-    const aiText = await generateAIMessage(client);
-
-    const newMessage = await Message.create({
-      clientId: client.id,
-      text: aiText,
-      role: "agent",
-      sentAt: new Date(),
-    });
-
-    ctx.body = newMessage;
-  } catch (error) {
-    console.error("Error in /generateMessage:", error);
+    ctx.body = {
+      id: created.id,
+      client_id: created.clientId,
+      role: created.role,
+      text: created.text,
+      sent_at: created.sentAt.toISOString(),
+    };
+  } catch (err: any) {
+    console.error(err);
     ctx.status = 500;
-    ctx.body = { error: "Internal server error" };
+    ctx.body = { error: err.message || "Failed to generate message" };
   }
 });
 
 export default router;
+
+
