@@ -6,7 +6,7 @@ import { Op } from 'sequelize';
 
 const router = new Router();
 
-router.get('/clients-to-do-follow-up', async (ctx: Context) => {
+router.get('/', async (ctx: Context) => {
   try {
     // Calculate the cutoff date: 7 days ago
     const sevenDaysAgo = new Date();
