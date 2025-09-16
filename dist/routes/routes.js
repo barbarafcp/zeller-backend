@@ -4,6 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const koa_router_1 = __importDefault(require("koa-router"));
+const clients_1 = __importDefault(require("./clients"));
+const clients_follow_up_1 = __importDefault(require("./clients-follow-up"));
 const router = new koa_router_1.default();
-//router.use();
+router.use('/clients', clients_1.default.routes(), clients_1.default.allowedMethods());
+router.use('/clients-to-do-follow-up', clients_follow_up_1.default.routes(), clients_follow_up_1.default.allowedMethods());
 exports.default = router;
