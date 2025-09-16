@@ -16,7 +16,7 @@ const koa_router_1 = __importDefault(require("koa-router"));
 const client_1 = require("../models/client");
 const message_1 = require("../models/message");
 const router = new koa_router_1.default();
-router.get('/clients-to-do-follow-up', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Calculate the cutoff date: 7 days ago
         const sevenDaysAgo = new Date();
