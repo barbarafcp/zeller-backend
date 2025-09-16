@@ -1,7 +1,7 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../db';
-import { MessageAttributes } from './message';
-import { DebtAttributes } from './debt';
+import { Message, MessageAttributes } from './message';
+import { Debt, DebtAttributes } from './debt';
 
 // Attributes
 interface ClientAttributes {
@@ -23,6 +23,9 @@ export class Client extends Model<ClientAttributes, ClientCreationAttributes> im
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  public Messages?: Message[];
+  public Debts?: Debt[];
 
   public static associate(models: any) {
     Client.hasMany(models.Message, { foreignKey: 'clientId' });

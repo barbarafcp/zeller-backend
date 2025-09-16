@@ -38,6 +38,16 @@ router.get('/:id', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const client = yield client_1.Client.findByPk(clientId, {
             attributes: ['id', 'name', 'rut'],
+            include: [
+                {
+                    model: message_1.Message,
+                    attributes: ['id', 'text', 'sentAt', 'role'],
+                },
+                {
+                    model: debt_1.Debt,
+                    attributes: ['id', 'amount', 'institution', 'dueDate'],
+                },
+            ],
         });
         if (!client) {
             ctx.status = 404;
@@ -74,13 +84,48 @@ router.post('/', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
                 dueDate: d.dueDate,
             })),
         }, {
-            include: [message_1.Message, debt_1.Debt], // This ensures nested creation
+            include: [message_1.Message, debt_1.Debt],
         });
         ctx.status = 201;
         ctx.body = newClient;
     }
     catch (error) {
         console.error('Error creating client:', error);
+        ctx.status = 500;
+        ctx.body = { error: 'Internal server error' };
+    }
+}));
+router.post('/:id/message', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const clientId = Number(ctx.params.id);
+        if (isNaN(clientId)) {
+            ctx.status = 400;
+            ctx.body = { error: 'Invalid client ID' };
+            return;
+        }
+        const client = yield client_1.Client.findByPk(clientId);
+        if (!client) {
+            ctx.status = 404;
+            ctx.body = { error: 'Client not found' };
+            return;
+        }
+        const { text, sentAt, role } = ctx.request.body;
+        if (!text || !sentAt || !role) {
+            ctx.status = 400;
+            ctx.body = { error: 'Text, sentAt, and role are required' };
+            return;
+        }
+        const message = yield message_1.Message.create({
+            clientId,
+            text,
+            sentAt,
+            role,
+        });
+        ctx.status = 201;
+        ctx.body = message;
+    }
+    catch (error) {
+        console.error('Error creating message:', error);
         ctx.status = 500;
         ctx.body = { error: 'Internal server error' };
     }
