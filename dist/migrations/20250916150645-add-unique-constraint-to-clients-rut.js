@@ -11,21 +11,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 module.exports = {
     up(queryInterface, Sequelize) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield queryInterface.bulkInsert('Debts', [
-                {
-                    institution: 'Bank A',
-                    amount: 5000,
-                    dueDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-                    clientId: 1,
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                }
-            ], {});
+            yield queryInterface.addConstraint('Clients', {
+                fields: ['rut'],
+                type: 'unique',
+                name: 'unique_rut_constraint'
+            });
         });
     },
     down(queryInterface, Sequelize) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield queryInterface.bulkDelete('Debts', null, {});
+            yield queryInterface.removeConstraint('Clients', 'unique_rut_constraint');
         });
     }
 };

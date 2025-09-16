@@ -7,7 +7,7 @@ module.exports = {
         text: 'Hablame sobre Toyota Corolla',
         role: 'client',
         sentAt: new Date(),
-        clientId: 3,
+        clientId: 1,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -15,15 +15,15 @@ module.exports = {
         text: 'Claro!',
         role: 'agent',
         sentAt: new Date(),
-        clientId: 3,
+        clientId: 1,
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         text: 'Hablame sobre Chevrolet Onix',
         role: 'client',
-        sentAt: new Date(),
-        clientId: 4,
+        sentAt: new Date(new Date().setDate(new Date().getDate() - 8)),
+        clientId: 2,
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -31,7 +31,7 @@ module.exports = {
         text: 'Si!',
         role: 'agent',
         sentAt: new Date(new Date().setDate(new Date().getDate() - 8)),
-        clientId: 4,
+        clientId: 2,
         createdAt: new Date(),
         updatedAt: new Date()
       }
