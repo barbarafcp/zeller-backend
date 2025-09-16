@@ -1,8 +1,8 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from './index';
+import { sequelize } from '../db';
 
 // Attributes
-interface MessageAttributes {
+export interface MessageAttributes {
   id: number;
   text: string;
   role: string;

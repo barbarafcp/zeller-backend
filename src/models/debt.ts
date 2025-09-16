@@ -1,8 +1,8 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from './index';
+import { sequelize } from '../db';
 
 // Attributes
-interface DebtAttributes {
+export interface DebtAttributes {
   id: number;
   institution: string;
   amount: number;

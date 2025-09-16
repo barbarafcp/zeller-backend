@@ -1,5 +1,7 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from './index';
+import { sequelize } from '../db';
+import { MessageAttributes } from './message';
+import { DebtAttributes } from './debt';
 
 // Attributes
 interface ClientAttributes {
@@ -9,7 +11,10 @@ interface ClientAttributes {
 }
 
 // Creation attributes
-interface ClientCreationAttributes extends Optional<ClientAttributes, 'id'> {}
+interface ClientCreationAttributes extends Optional<ClientAttributes, 'id'> {
+  Messages?: Partial<MessageAttributes>[];
+  Debts?: Partial<DebtAttributes>[]; 
+}
 
 export class Client extends Model<ClientAttributes, ClientCreationAttributes> implements ClientAttributes {
   public id!: number;
