@@ -1,8 +1,11 @@
 const Router = require('koa-router');
+import 'dotenv/config';
+import OpenAI from "openai";
 import { Context } from 'koa';
 import { Client } from '../models/client';
 import { Message } from '../models/message';
 import { Debt } from '../models/debt';
+import { generateMessageForClient } from '../ai/prompt';
 
 const router = new Router();
 
@@ -135,4 +138,41 @@ router.post('/:id/message', async (ctx: Context) => {
   }
 });
 
+router.get("/:id/generateMessage", async (ctx: Context) => {
+  const clientId = Number(ctx.params.id);
+  if (!Number.isFinite(clientId)) {
+    ctx.status = 400;
+    ctx.body = { error: "Invalid client ID" };
+    return;
+  }
+
+  const client = await Client.findByPk(clientId, {
+    include: [Message],
+    order: [[Message, "sentAt", "ASC"]],
+  });
+  if (!client) {
+    ctx.status = 404;
+    ctx.body = { error: "Client not found" };
+    return;
+  }
+
+  try {
+    const created = await generateMessageForClient(client);
+
+    ctx.body = {
+      id: created.id,
+      client_id: created.clientId,
+      role: created.role,
+      text: created.text,
+      sent_at: created.sentAt.toISOString(),
+    };
+  } catch (err: any) {
+    console.error(err);
+    ctx.status = 500;
+    ctx.body = { error: err.message || "Failed to generate message" };
+  }
+});
+
 export default router;
+
+

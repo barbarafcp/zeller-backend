@@ -38,7 +38,7 @@ Client.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING, allowNull: false },
-    rut: { type: DataTypes.STRING, allowNull: false },
+    rut: { type: DataTypes.STRING, allowNull: false, unique: true },
   },
   { sequelize, modelName: 'Client', tableName: 'Clients' }
 );

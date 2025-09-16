@@ -14,6 +14,6 @@ exports.Client = Client;
 Client.init({
     id: { type: sequelize_1.DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: sequelize_1.DataTypes.STRING, allowNull: false },
-    rut: { type: sequelize_1.DataTypes.STRING, allowNull: false },
+    rut: { type: sequelize_1.DataTypes.STRING, allowNull: false, unique: true },
 }, { sequelize: db_1.sequelize, modelName: 'Client', tableName: 'Clients' });
 exports.default = Client;
