@@ -8,13 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Router = require('koa-router');
 require("dotenv/config");
-const openai_1 = __importDefault(require("openai"));
 const client_1 = require("../models/client");
 const message_1 = require("../models/message");
 const debt_1 = require("../models/debt");
@@ -116,15 +112,16 @@ router.post('/:id/message', (ctx) => __awaiter(void 0, void 0, void 0, function*
             return;
         }
         const { text, sentAt, role } = ctx.request.body;
-        if (!text || !sentAt || !role) {
+        if (!text || !role) {
             ctx.status = 400;
             ctx.body = { error: 'Text, sentAt, and role are required' };
             return;
         }
+        const sentAtValue = sentAt ? new Date(sentAt) : new Date();
         const message = yield message_1.Message.create({
             clientId,
             text,
-            sentAt,
+            sentAt: sentAtValue,
             role,
         });
         ctx.status = 201;
@@ -137,7 +134,6 @@ router.post('/:id/message', (ctx) => __awaiter(void 0, void 0, void 0, function*
     }
 }));
 router.get("/:id/generateMessage", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g;
     const clientId = Number(ctx.params.id);
     if (!Number.isFinite(clientId)) {
         ctx.status = 400;
@@ -153,43 +149,20 @@ router.get("/:id/generateMessage", (ctx) => __awaiter(void 0, void 0, void 0, fu
         ctx.body = { error: "Client not found" };
         return;
     }
-    //const name = client?.name || "cliente";
-    const history = (0, prompt_1.mapHistoryToOpenAI)((_a = client === null || client === void 0 ? void 0 : client.Messages) !== null && _a !== void 0 ? _a : []).slice(-20);
-    const messages = [prompt_1.systemMsg, ...history];
-    //const morosa = hasDelinquency(client?.Debts ?? []);
-    //const financeFlag = morosa ? "NO_ELEGIBLE_FINANCIAMIENTO" : "ELEGIBLE_FINANCIAMIENTO";
-    const apiKey = (_b = process.env.OPENAI_API_KEY) === null || _b === void 0 ? void 0 : _b.trim();
-    if (!apiKey) {
-        ctx.status = 500;
-        ctx.body = { error: "Missing OPENAI_API_KEY" };
-        return;
-    }
-    const openai = new openai_1.default({ apiKey });
-    let text = "";
     try {
-        const completion = yield openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            temperature: 0.6,
-            max_tokens: 100,
-            messages,
-        });
-        text = (_g = (_f = (_e = (_d = (_c = completion.choices) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.message) === null || _e === void 0 ? void 0 : _e.content) === null || _f === void 0 ? void 0 : _f.trim()) !== null && _g !== void 0 ? _g : "";
+        const created = yield (0, prompt_1.generateMessageForClient)(client);
+        ctx.body = {
+            id: created.id,
+            client_id: created.clientId,
+            role: created.role,
+            text: created.text,
+            sent_at: created.sentAt.toISOString(),
+        };
     }
-    catch (e) {
-        console.error("OpenAI error:", (e === null || e === void 0 ? void 0 : e.status) || (e === null || e === void 0 ? void 0 : e.message) || e);
+    catch (err) {
+        console.error(err);
+        ctx.status = 500;
+        ctx.body = { error: err.message || "Failed to generate message" };
     }
-    if (!text) {
-        ctx.status = 204;
-        return;
-    }
-    const now = new Date();
-    const created = yield message_1.Message.create({ clientId, role: "agent", text, sentAt: now });
-    ctx.body = {
-        id: created.id,
-        client_id: created.clientId,
-        role: created.role,
-        text: created.text,
-        sent_at: now.toISOString(),
-    };
 }));
 exports.default = router;
