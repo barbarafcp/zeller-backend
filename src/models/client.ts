@@ -3,14 +3,14 @@ import { sequelize } from '../db';
 import { Message, MessageAttributes } from './message';
 import { Debt, DebtAttributes } from './debt';
 
-// Attributes
+// Atributos
 interface ClientAttributes {
   id: number;
   name: string;
   rut: string;
 }
 
-// Creation attributes
+// Creacion atributos
 interface ClientCreationAttributes extends Optional<ClientAttributes, 'id'> {
   Messages?: Partial<MessageAttributes>[];
   Debts?: Partial<DebtAttributes>[]; 
@@ -33,7 +33,7 @@ export class Client extends Model<ClientAttributes, ClientCreationAttributes> im
   }
 }
 
-// Initialize model
+// Inicia el modelo
 Client.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },

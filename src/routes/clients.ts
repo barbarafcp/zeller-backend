@@ -9,6 +9,7 @@ import { generateMessageForClient } from '../ai/prompt';
 
 const router = new Router();
 
+// Lista todos los clientes con su id, nombre y RUT
 router.get('/', async (ctx: Context) => {
   try {
     const clients = await Client.findAll({
@@ -23,6 +24,7 @@ router.get('/', async (ctx: Context) => {
   }
 });
 
+// Obtiene un cliente específico (por ID) junto a sus mensajes y deudas
 router.get('/:id', async (ctx: Context) => {
   try {
     const clientId = Number(ctx.params.id);
@@ -60,6 +62,7 @@ router.get('/:id', async (ctx: Context) => {
   }
 });
 
+// Crea un nuevo cliente con sus mensajes y deudas
 router.post('/', async (ctx: Context) => {
   try {
     const { name, rut, messages, debts } = ctx.request.body;
@@ -99,6 +102,7 @@ router.post('/', async (ctx: Context) => {
   }
 });
 
+// Crea un nuevo mensaje para un cliente específico
 router.post('/:id/message', async (ctx: Context) => {
   try {
     const clientId = Number(ctx.params.id);
@@ -140,6 +144,7 @@ router.post('/:id/message', async (ctx: Context) => {
   }
 });
 
+// Genera un nuevo mensaje automático (IA) para un cliente
 router.get("/:id/generateMessage", async (ctx: Context) => {
   const clientId = Number(ctx.params.id);
   if (!Number.isFinite(clientId)) {

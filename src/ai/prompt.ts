@@ -4,6 +4,7 @@ import { OpenAI } from "openai";
 import { Client } from "../models/client";
 import { Message } from "../models/message";
 
+// Prompt base del sistema utilizado en todas las conversaciones.
 export const systemMsg = {
   role: "system" as const,
   content: `
@@ -36,10 +37,12 @@ No inventes datos, no prometas precios ni stock. Si falta información clave, pr
 `
 };
 
+// Verifica si el cliente tiene al menos una deuda vencida.
 export function hasDelinquency(debts: { dueDate: Date }[] = [], now = new Date()) {
   return debts.some(d => new Date(d.dueDate).getTime() < now.getTime());
 }
 
+// Convierte el historial de mensajes a los roles user y assistant ordenados por fecha
 export function mapHistoryToOpenAI(messages: MessageAttributes[]) {
   return messages
     .sort((a,b) => +new Date(a.sentAt) - +new Date(b.sentAt))
@@ -49,18 +52,23 @@ export function mapHistoryToOpenAI(messages: MessageAttributes[]) {
     );
 }
 
+// Genera y guarda un nuevo mensaje del agente para un cliente específico.
 export async function generateMessageForClient(client: Client): Promise<Message> {
   const name = client?.name ?? "cliente";
+
+  // Determina la política de financiamiento según si el cliente tiene deudas vencidas
   const morosa = hasDelinquency((client as any)?.Debts ?? []);
   const financePolicy = morosa
     ? "No puedes ofrecer financiamiento; sugiere alternativas al contado o regularización primero."
     : "Puedes ofrecer financiamiento si corresponde.";
 
+  // Combina el prompt base con la política específica de este cliente
   const systemMsgForClient = {
     role: "system" as const,
     content: systemMsg.content + "\n\nPolítica específica para este cliente: " + financePolicy
   };
 
+  // Proporciona contexto del cliente para guiar la respuesta del modelo
   const contextMsg = {
     role: "user" as const,
     content: JSON.stringify({
@@ -69,17 +77,18 @@ export async function generateMessageForClient(client: Client): Promise<Message>
     })
   };
 
+  // Solo se toman los últimos 20 mensajes
   const history = mapHistoryToOpenAI(client.Messages ?? []).slice(-20);
 
   const messages = [systemMsgForClient, contextMsg, ...history];
 
-  // Set up OpenAI client
+  // Verifica que la clave de la API exista antes de llamar al modelo
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) throw new Error("Missing OPENAI_API_KEY");
 
   const openai = new OpenAI({ apiKey });
 
-  // Call model
+  // Solicita al modelo una respuesta breve y determinista
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     temperature: 0,
@@ -90,7 +99,7 @@ export async function generateMessageForClient(client: Client): Promise<Message>
   const text = completion.choices?.[0]?.message?.content?.trim() ?? "";
   if (!text) throw new Error("No text generated");
 
-  // Persist new agent message
+  // Crea y guarda el nuevo mensaje del agente en la base de datos
   const now = new Date();
   return await Message.create({
     clientId: client.id,
