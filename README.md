@@ -40,20 +40,21 @@ npm start
 
 ## Configuración de OpenAI
 ### 1. Modelo utilizado
-**gpt-4o-mini** fue seleccionado por baja latencia y costo, manteniendo una calidad suficiente para respuestas breves.\n
-**temperature: 0** Garantiza respuestas estables y deterministas, sin creatividad innecesaria.\n
-**max_tokens: 100** Limita la respuesta a 1–2 líneas, aproximadamente 220 caracteres, adaptado a chat estilo WhatsApp.\n
 
-**System prompt** define:\n
-- La persona que responde (“Sergio”, asesor humano).\n
-- Estilo: cercano, cálido, breve, español chileno.\n
-- Catálogo permitido (solo ciertos modelos de autos).\n
-- Sucursales y reglas de financiamiento según morosidad.\n
-- Restricciones: no inventar autos, stock ni precios; preguntar solo 1 cosa si falta información.\n
+**gpt-4o-mini** fue seleccionado por baja latencia y costo, manteniendo una calidad suficiente para respuestas breves.  
+**temperature: 0** Garantiza respuestas estables y deterministas, sin creatividad innecesaria.  
+**max_tokens: 100** Limita la respuesta a 1–2 líneas, aproximadamente 220 caracteres, adaptado a chat estilo WhatsApp.  
 
-**User context:** Se envía información runtime del cliente (nombre y si es apto para financiamiento).\n
+**System prompt** define:  
+- La persona que responde (“Sergio”, asesor humano).  
+- Estilo: cercano, cálido, breve, español chileno.  
+- Catálogo permitido (solo ciertos modelos de autos).  
+- Sucursales y reglas de financiamiento según morosidad.  
+- Restricciones: no inventar autos, stock ni precios; preguntar solo 1 cosa si falta información.  
 
-**Historial de la conversación:** Se mapean los últimos ~20 mensajes\n
+**User context:** Se envía información runtime del cliente (nombre y si es apto para financiamiento).  
+
+**Historial de la conversación:** Se mapean los últimos 20 mensajes aprox.  
 
 ### 2. Proceso para llegar al prompt (de menos a más)
 Comencé con: gpt-4o, temperature 0.7, sin max_tokens, sin historial, esto me daba respuestas útiles pero largas/genéricas y me permitía guardar el mensaje en la db por la extensión.
