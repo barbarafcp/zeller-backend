@@ -2,6 +2,8 @@
 
 El backend de producción lo puedes encontrar en: [https://my-zeller-api.onrender.com](https://my-zeller-api.onrender.com)
 
+---
+
 ## Ejecución local
 Ahora si quieres correr este backend de forma local. Aqui estan los pasos a seguir:
 ### 1. Instalar postgresql si no lo tienes y crear un usuario con una base de datos y contraseña:
@@ -33,6 +35,8 @@ npm start
 ```
 
 ¡Y listo! Funcionando y corriendo.
+
+---
 
 ## Configuración de OpenAI
 ### 1. Modelo utilizado
