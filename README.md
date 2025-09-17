@@ -49,6 +49,7 @@ npm start
 **gpt-4o-mini** fue seleccionado por baja latencia y costo, manteniendo una calidad suficiente para respuestas breves.  
 **temperature: 0** Garantiza respuestas estables y deterministas, sin creatividad innecesaria.  
 **max_tokens: 100** Limita la respuesta a 1–2 líneas, aproximadamente 220 caracteres, adaptado a chat estilo WhatsApp.  
+**frequency_penalty: 0.2, presence_penalty: 0.2, n=3** Añaden variabilidad a las respuestas.  
 
 **System prompt** define:  
 - La persona que responde (“Sergio”, asesor humano).  
@@ -59,7 +60,9 @@ npm start
 
 **User context:** Se envía información runtime del cliente (nombre y si es apto para financiamiento).  
 
-**Historial de la conversación:** Se mapean los últimos 20 mensajes aprox.  
+**Historial de la conversación:** Se mapean los últimos 20 mensajes aprox.   
+
+También se espcifica si es el primer mensaje del chat para que se presente.
 
 ### 2. Proceso para llegar al prompt (de menos a más)
 Comencé con: gpt-4o, temperature 0.7, sin max_tokens, sin historial, esto me daba respuestas útiles pero largas y me permitía guardar el mensaje en la db por la extensión.  
@@ -68,7 +71,7 @@ Entonces comencé a cambiar algunos parámetros: max_tokens 100 y migrar a gpt-4
 
 Comencé con un prompt básico para probar la funcionalidad y de a poco le fui agregando detalles al prompt y a la solicitud, como incluir historial, catálogo de marcas y modelos, sucursales, control de financiamiento por morosidad, etc.  
 
-Luego bajé la temperature a 0, pero estaba dando mensajes idénticos muchas veces, asi que añadí frequency_penalty, presence_penalty y n=3 para añadir variabilidad, pero manteniendo la temperature para una mejor lógica.
+Luego bajé la temperature a 0, pero estaba dando mensajes idénticos muchas veces, asi que añadí frequency_penalty, presence_penalty y n para añadir variabilidad, pero manteniendo la temperature para una mejor lógica.
 
 
 ### 3. Ejemplos probados
