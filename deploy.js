@@ -29,9 +29,6 @@ async function main() {
     console.log("Running Sequelize migrations...");
     await run("npx sequelize-cli db:migrate --config src/config/config.js --migrations-path src/migrations --models-path src/models --seeders-path src/seeders");
 
-    console.log("Clearing Clients table...");
-    await run(`npx sequelize-cli db:seed:execute --config src/config/config.js --seeders-path src/seeders --sql 'TRUNCATE TABLE "Clients" RESTART IDENTITY CASCADE;'`);
-
     console.log("Seeding database...");
     await run("npx sequelize-cli db:seed:all --config src/config/config.js --migrations-path src/migrations --models-path src/models --seeders-path src/seeders");
   }
