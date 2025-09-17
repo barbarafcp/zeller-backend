@@ -27,10 +27,10 @@ async function main() {
     await run("npm run build");
 
     console.log("Running Sequelize migrations...");
-    await run("npx sequelize-cli db:migrate");
+    await run("npx sequelize-cli db:migrate --config src/config/config.js --migrations-path src/migrations --models-path src/models --seeders-path src/seeders");
 
     console.log("Seeding database...");
-    await run("npx sequelize-cli db:seed:all");
+    await run("npx sequelize-cli db:seed:all --config src/config/config.js --migrations-path src/migrations --models-path src/models --seeders-path src/seeders");
   }
 
   if (mode === "start" || mode === "all") {
