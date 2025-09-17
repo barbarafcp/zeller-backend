@@ -154,14 +154,16 @@ router.get("/:id/generateMessage", async (ctx: Context) => {
   }
 
   const client = await Client.findByPk(clientId, {
-    include: [Message],
-    order: [[Message, "sentAt", "ASC"]],
-  });
-  if (!client) {
+    include: [
+        { model: Message, order: [["sentAt", "ASC"]] },
+        { model: Debt }
+    ]});
+
+    if (!client) {
     ctx.status = 404;
     ctx.body = { error: "Client not found" };
     return;
-  }
+    }
 
   try {
     const created = await generateMessageForClient(client);
