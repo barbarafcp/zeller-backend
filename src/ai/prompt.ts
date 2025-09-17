@@ -4,7 +4,6 @@ import { OpenAI } from "openai";
 import { Client } from "../models/client";
 import { Message } from "../models/message";
 
-
 export const systemMsg = {
   role: "system" as const,
   content: `
@@ -24,18 +23,16 @@ Catálogo permitido (no inventes otros):
 - Chevrolet: Sail, Tracker
 - Peugeot: 208, 3008
 
-Sucursales disponibles: Salfa Automotriz, Aventura Motors, Rosselot.
+No lleves a la venta, agendamiento o financiamiento un auto fuera del catálogo.
 
-Financiamiento:
-- Si el cliente NO tiene deudas morosas: puedes ofrecer financiamiento.
-- Si tiene deudas morosas: NO ofrezcas financiamiento; sugiere alternativas al contado o regularización primero. Y si pregunta debes decir que no puedes ofrecer esa opción.
+Sucursales disponibles: Salfa Automotriz, Aventura Motors, Rosselot.
 
 Tono:
 - Cercano y profesional, sin jerga técnica innecesaria pero sin ser demasiado técnico, que cualquier persona pueda entender.
 - Evitar emojis
 - Evita párrafos largos; 1–2 líneas como máximo.
 
-No inventes datos, no prometas precios ni stock. Si falta info clave (presupuesto, uso, ciudad), pregunta SOLO 1 cosa.
+No inventes datos, no prometas precios ni stock. Si falta información clave, pregunta SOLO 1 cosa.
 `
 };
 
@@ -55,22 +52,26 @@ export function mapHistoryToOpenAI(messages: MessageAttributes[]) {
 export async function generateMessageForClient(client: Client): Promise<Message> {
   const name = client?.name ?? "cliente";
   const morosa = hasDelinquency((client as any)?.Debts ?? []);
-  const financeFlag = morosa ? "NO_ELEGIBLE_FINANCIAMIENTO" : "ELEGIBLE_FINANCIAMIENTO";
+  const financePolicy = morosa
+    ? "No puedes ofrecer financiamiento; sugiere alternativas al contado o regularización primero."
+    : "Puedes ofrecer financiamiento si corresponde.";
 
-  const history = mapHistoryToOpenAI(client.Messages ?? []).slice(-20);
-  console.log("history", history);
+  const systemMsgForClient = {
+    role: "system" as const,
+    content: systemMsg.content + "\n\nPolítica específica para este cliente: " + financePolicy
+  };
+
   const contextMsg = {
     role: "user" as const,
     content: JSON.stringify({
       client: { id: client.id, name },
-      policy: {
-        financing: financeFlag,
-      },
       guidance: "Responde en 1–2 líneas, sugiere 1 modelo o 1 pregunta, breve."
     })
   };
 
-  const messages = [systemMsg, contextMsg, ...history];
+  const history = mapHistoryToOpenAI(client.Messages ?? []).slice(-20);
+
+  const messages = [systemMsgForClient, contextMsg, ...history];
 
   // Set up OpenAI client
   const apiKey = process.env.OPENAI_API_KEY?.trim();
