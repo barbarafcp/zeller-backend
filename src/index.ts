@@ -4,8 +4,10 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+// Puerto de escucha: usa el definido en .env o 3000 por defecto
 const port = process.env.PORT || 3000;
 
+// Verifica la conexión a la base de datos
 db.sequelize
   .authenticate()
   .then(() => {

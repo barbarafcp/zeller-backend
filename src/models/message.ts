@@ -1,7 +1,7 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../db';
 
-// Attributes
+// Atributos
 export interface MessageAttributes {
   id: number;
   text: string;
@@ -10,7 +10,7 @@ export interface MessageAttributes {
   clientId: number;
 }
 
-// Creation attributes
+// Creacion atributos
 interface MessageCreationAttributes extends Optional<MessageAttributes, 'id'> {}
 
 export class Message extends Model<MessageAttributes, MessageCreationAttributes> implements MessageAttributes {
@@ -28,7 +28,7 @@ export class Message extends Model<MessageAttributes, MessageCreationAttributes>
   }
 }
 
-// Initialize model
+// Inicia el modelo
 Message.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },

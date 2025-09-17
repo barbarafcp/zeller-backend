@@ -5,27 +5,21 @@ import koaBody from 'koa-body';
 import router from './routes/routes';
 import orm from './models';
 
-// Create a koa application
+// Instancia de koa
 const app = new koa();
-//const port: number = 3000;
 
+// Agrega el ORM a koa
 app.context.orm = orm;
 
+// Middlewares
 app.use(cors({ origin: "*" }));
-
 app.use(koaLogger());
 app.use(koaBody());
-
 app.use(router.routes());
 
+// Si ninguna ruta coincide, responde "Hello"
 app.use((ctx, next) => (
     ctx.body = "Hello"
 ));
-
-/*
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
-*/
 
 module.exports = app;

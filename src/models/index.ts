@@ -6,23 +6,22 @@ import configJson from '../config/config';
 
 dotenv.config();
 
+//  Configuración de Sequelize
 const basename = path.basename(__filename);
 const env = (process.env.NODE_ENV || 'development') as 'development' | 'test' | 'production';
-
 const config = configJson[env];
 
-// Create Sequelize instance
 const sequelize = config.use_env_variable
   ? new Sequelize(process.env[config.use_env_variable]!, config)
   : new Sequelize(config.database, config.username, config.password, config);
 
-// DB object to hold models
+// Objeto que almacenará la conexión y todos los modelos cargados dinámicamente.
 const db: { [key: string]: any; sequelize: Sequelize; Sequelize: typeof Sequelize } = {
   sequelize,
   Sequelize,
 };
 
-// Dynamically import all models
+// Lee los archivos y carga dinámica de modelos
 fs.readdirSync(__dirname)
   .filter(file => {
     return (
@@ -41,7 +40,7 @@ fs.readdirSync(__dirname)
     db[model.name] = model;
   });
 
-// Run associations
+// Ejecuta el método associate de cada modelo para definir relaciones
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);

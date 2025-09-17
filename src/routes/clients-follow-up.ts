@@ -6,13 +6,14 @@ import { Op } from 'sequelize';
 
 const router = new Router();
 
+// Retorna los clientes cuyo último mensaje fue hace más de 7 días
 router.get('/', async (ctx: Context) => {
   try {
-    // Calculate the cutoff date: 7 days ago
+    // Fecha de corte: 7 días atrás desde hoy
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    // Find clients whose last message is older than 7 days
+    // Busca todos los clientes junto a sus mensajes
     const clients = await Client.findAll({
       attributes: ['id', 'name', 'rut'],
       include: [
@@ -24,13 +25,15 @@ router.get('/', async (ctx: Context) => {
       ],
     });
 
-    // Filter clients whose last message was more than 7 days ago
+    // Filtra clientes cuyo último mensaje es anterior a la fecha de corte
     const clientsToFollowUp = clients.filter(client => {
       const messages = client.Messages || [];
       if (messages.length === 0) return false;
+      // Obtiene el mensaje más reciente
       const lastMessage = messages.reduce((prev, curr) =>
         new Date(prev.sentAt) > new Date(curr.sentAt) ? prev : curr
       );
+      // Comprueba si ese mensaje tiene más de 7 días
       return new Date(lastMessage.sentAt) < sevenDaysAgo;
     });
 

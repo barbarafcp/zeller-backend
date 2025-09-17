@@ -1,7 +1,7 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../db';
 
-// Attributes
+// Atributos
 export interface DebtAttributes {
   id: number;
   institution: string;
@@ -10,7 +10,7 @@ export interface DebtAttributes {
   clientId: number;
 }
 
-// Creation attributes (id is auto-incremented)
+// Atributos requeridos para crear una nueva fila
 interface DebtCreationAttributes extends Optional<DebtAttributes, 'id'> {}
 
 // Model definition
@@ -24,13 +24,13 @@ export class Debt extends Model<DebtAttributes, DebtCreationAttributes> implemen
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  // Associations
+  // Asociaciones
   public static associate(models: any) {
     Debt.belongsTo(models.Client, { foreignKey: 'clientId' });
   }
 }
 
-// Initialize the model
+// Inicia el modelo
 Debt.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
