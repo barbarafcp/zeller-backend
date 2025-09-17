@@ -15,7 +15,7 @@ Tu objetivo en cada respuesta:
 1) Reconoce el contexto del cliente y/o su última intención.
 2) Sugiere 1 opción concreta (marca+modelo) o haz 1 pregunta clave si faltan datos (máximo 1 pregunta).
 3) Menciona sucursales relevantes SOLO si aporta (máx 1).
-4) No siempre debes cerrar con un Call to Action, pero lleva la conversación hacia eso (ej: "¿Te reservo una visita?").
+4) No siempre debes cerrar con un Call to Action, pero siempre lleva la conversación hacia eso (ej: "¿Te reservo una visita?").
 
 Catálogo permitido (no inventes otros):
 - Toyota: Hilux, Corolla
@@ -23,17 +23,13 @@ Catálogo permitido (no inventes otros):
 - Nissan: Versa, X-Trail
 - Chevrolet: Sail, Tracker
 - Peugeot: 208, 3008
-
 No lleves a la venta, agendamiento o financiamiento un auto fuera del catálogo.
 
 Sucursales disponibles: Salfa Automotriz, Aventura Motors, Rosselot.
 
-Tono:
-- Cercano y profesional, sin jerga técnica innecesaria pero sin ser demasiado técnico, que cualquier persona pueda entender.
-- Evitar emojis
-- Evita párrafos largos; 1–2 líneas como máximo.
-
 No inventes datos, no prometas precios ni stock. Si falta información clave, pregunta SOLO 1 cosa.
+
+Usa el nombre del cliente de vez en cuando, no siempre.
 `
 };
 
@@ -63,10 +59,19 @@ export async function generateMessageForClient(client: Client): Promise<Message>
     ? "No puedes ofrecer financiamiento; sugiere alternativas al contado o regularización primero."
     : "Puedes ofrecer financiamiento.";
 
+  // Contamos cuantos mensajes hay del rol "agent"
+  const prevAgentCount = await Message.count({ where: { clientId: client.id, role: "agent" } });
+  const isFirstAgentMsg = prevAgentCount === 0;
+
+  // Determina que si es el primer mensaje, debe presentarse
+  const introduction = isFirstAgentMsg
+  ? "Presentate brevemente, por ejemplo: Hola ${name}, yo soy Sergio y seré tu asesor."
+  : "";
+
   // Combina el prompt base con la política específica de este cliente
   const systemMsgForClient = {
     role: "system" as const,
-    content: systemMsg.content + "\n\nPolítica específica para este cliente: " + financePolicy
+    content: systemMsg.content + "\n\nPolítica específica para este cliente: " + financePolicy + "\n" + introduction
   };
 
   // Proporciona contexto del cliente para guiar la respuesta del modelo
@@ -74,13 +79,14 @@ export async function generateMessageForClient(client: Client): Promise<Message>
     role: "user" as const,
     content: JSON.stringify({
       client: { id: client.id, name },
-      guidance: "Responde en 1–2 líneas, sugiere 1 modelo o 1 pregunta, breve."
+      guidance: "Responde en 1–2 líneas, sugiere modelos, 1 pregunta o 1 CTA, breve."
     })
   };
 
   // Solo se toman los últimos 20 mensajes
   const history = mapHistoryToOpenAI(client.Messages ?? []).slice(-20);
 
+  // Combina el prompt base, el contexto del cliente y el historial de conversación
   const messages = [systemMsgForClient, contextMsg, ...history];
 
   // Verifica que la clave de la API exista antes de llamar al modelo
@@ -92,7 +98,7 @@ export async function generateMessageForClient(client: Client): Promise<Message>
   // Solicita al modelo una respuesta breve y determinista
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    temperature: 0.5,
+    temperature: 0,
     frequency_penalty: 0.2,
     presence_penalty: 0.2,
     n: 3,

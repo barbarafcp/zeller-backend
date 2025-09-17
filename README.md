@@ -66,9 +66,9 @@ Comencé con: gpt-4o, temperature 0.7, sin max_tokens, sin historial, esto me da
 
 Entonces comencé a cambiar algunos parámetros: max_tokens 100 y migrar a gpt-4o-mini, que es más corto y rápido.  
 
-Comencé con un prompt básico para probar la funcionalidad y de a poco le fui agregando detalles al prompt y a la solicitud, como incluir historial, catálogo de marcas y modelos, sucursales, control de financiamiento por morosidad.  
+Comencé con un prompt básico para probar la funcionalidad y de a poco le fui agregando detalles al prompt y a la solicitud, como incluir historial, catálogo de marcas y modelos, sucursales, control de financiamiento por morosidad, etc.  
 
-Luego bajé la temperature a 0, pero estaba dando mensajes idénticos muchas veces, asi que lo subí a 0.5 y añadí frequency_penalty, presence_penalty y n=3
+Luego bajé la temperature a 0, pero estaba dando mensajes idénticos muchas veces, asi que añadí frequency_penalty, presence_penalty y n=3 para añadir variabilidad, pero manteniendo la temperature para una mejor lógica.
 
 
 ### 3. Ejemplos probados
@@ -121,7 +121,7 @@ Tu objetivo en cada respuesta:
 1) Reconoce el contexto del cliente y/o su última intención.
 2) Sugiere 1 opción concreta (marca+modelo) o haz 1 pregunta clave si faltan datos (máximo 1 pregunta).
 3) Menciona sucursales relevantes SOLO si aporta (máx 1).
-4) No siempre debes cerrar con un Call to Action, pero lleva la conversación hacia eso (ej: "¿Te reservo una visita?").
+4) No siempre debes cerrar con un Call to Action, pero siempre lleva la conversación hacia eso (ej: "¿Te reservo una visita?").
 
 Catálogo permitido (no inventes otros):
 - Toyota: Hilux, Corolla
@@ -129,15 +129,11 @@ Catálogo permitido (no inventes otros):
 - Nissan: Versa, X-Trail
 - Chevrolet: Sail, Tracker
 - Peugeot: 208, 3008
-
 No lleves a la venta, agendamiento o financiamiento un auto fuera del catálogo.
 
 Sucursales disponibles: Salfa Automotriz, Aventura Motors, Rosselot.
 
-Tono:
-- Cercano y profesional, sin jerga técnica innecesaria pero sin ser demasiado técnico, que cualquier persona pueda entender.
-- Evitar emojis
-- Evita párrafos largos; 1–2 líneas como máximo.
-
 No inventes datos, no prometas precios ni stock. Si falta información clave, pregunta SOLO 1 cosa.
+
+Usa el nombre del cliente de vez en cuando, no siempre.
 ```
