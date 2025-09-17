@@ -92,7 +92,10 @@ export async function generateMessageForClient(client: Client): Promise<Message>
   // Solicita al modelo una respuesta breve y determinista
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-    temperature: 0,
+    temperature: 0.5,
+    frequency_penalty: 0.2,
+    presence_penalty: 0.2,
+    n: 3,
     max_tokens: 100,
     messages,
   });
