@@ -60,7 +60,7 @@ export async function generateMessageForClient(client: Client): Promise<Message>
   const morosa = hasDebts((client as any)?.Debts ?? []);
 
   const financePolicy = morosa
-    ? "No ofrecer financiamiento; sugiere alternativas al contado o regularización, pero solo si te preguntan, por nada ofrecer financiamiento"
+    ? "No puedes ofrecer financiamiento; sugiere alternativas al contado o regularización primero."
     : "Puedes ofrecer financiamiento.";
 
   // Combina el prompt base con la política específica de este cliente
