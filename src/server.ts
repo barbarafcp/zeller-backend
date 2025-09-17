@@ -7,11 +7,11 @@ import orm from './models';
 
 // Create a koa application
 const app = new koa();
-const port: number = 3000;
+//const port: number = 3000;
 
 app.context.orm = orm;
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
 
 app.use(koaLogger());
 app.use(koaBody());
