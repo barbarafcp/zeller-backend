@@ -59,8 +59,8 @@ export async function generateMessageForClient(client: Client): Promise<Message>
   // Determina la política de financiamiento según si el cliente tiene deudas vencidas
   const morosa = hasDelinquency((client as any)?.Debts ?? []);
   const financePolicy = morosa
-    ? "No puedes ofrecer financiamiento; sugiere alternativas al contado o regularización primero."
-    : "Puedes ofrecer financiamiento si corresponde.";
+    ? "Prohibido ofrecer financiamiento; sugiere alternativas al contado o regularización, pero solo si te preguntan, por nada ofrecer financiamiento"
+    : "Puedes ofrecer financiamiento.";
 
   // Combina el prompt base con la política específica de este cliente
   const systemMsgForClient = {
