@@ -37,9 +37,9 @@ No inventes datos, no prometas precios ni stock. Si falta información clave, pr
 `
 };
 
-// Verifica si el cliente tiene al menos una deuda vencida.
-export function hasDelinquency(debts: { dueDate: Date }[] = [], now = new Date()) {
-  return debts.some(d => new Date(d.dueDate).getTime() < now.getTime());
+// Verifica si el cliente tiene al menos una deuda.
+export function hasDebts(debts: { dueDate: Date }[] = []) {
+  return debts.length > 0;
 }
 
 // Convierte el historial de mensajes a los roles user y assistant ordenados por fecha
@@ -57,9 +57,10 @@ export async function generateMessageForClient(client: Client): Promise<Message>
   const name = client?.name ?? "cliente";
 
   // Determina la política de financiamiento según si el cliente tiene deudas vencidas
-  const morosa = hasDelinquency((client as any)?.Debts ?? []);
+  const morosa = hasDebts((client as any)?.Debts ?? []);
+
   const financePolicy = morosa
-    ? "Prohibido ofrecer financiamiento; sugiere alternativas al contado o regularización, pero solo si te preguntan, por nada ofrecer financiamiento"
+    ? "No ofrecer financiamiento; sugiere alternativas al contado o regularización, pero solo si te preguntan, por nada ofrecer financiamiento"
     : "Puedes ofrecer financiamiento.";
 
   // Combina el prompt base con la política específica de este cliente

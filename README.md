@@ -2,6 +2,11 @@
 
 El backend de producción lo puedes encontrar en: [https://my-zeller-api.onrender.com](https://my-zeller-api.onrender.com)
 
+Consideraciones que debes tener:  
+Puedes hacer un POST /clients/:id/message sin el atributo sentAt, se hará automáticamente.  
+Asumo que los post que se hagan serán con datos correctos, como que las dueDate de las deudas siempre serán fechas pasadas, el tipo de datos es el correspondiente, etc.  
+Los RUT deben ser únicos.  
+
 ---
 
 ## Ejecución local
@@ -57,9 +62,12 @@ npm start
 **Historial de la conversación:** Se mapean los últimos 20 mensajes aprox.  
 
 ### 2. Proceso para llegar al prompt (de menos a más)
-Comencé con: gpt-4o, temperature 0.7, sin max_tokens, sin historial, esto me daba respuestas útiles pero largas/genéricas y me permitía guardar el mensaje en la db por la extensión.
-Entonce comencé a cambiar algunos parámetros: max_tokens 100 y migrar a gpt-4o-mini, que es más corto y rápido.\n
-Comencé con un prompt básico para probar la funcionalidad y de a poco le fui agregando detalles al prompt y a la solicitud, como incluir historial, catálogo de marcas y modelos, sucursales, control de financiamiento por morosidad.
+Comencé con: gpt-4o, temperature 0.7, sin max_tokens, sin historial, esto me daba respuestas útiles pero largas/genéricas y me permitía guardar el mensaje en la db por la extensión.  
+
+Entonces comencé a cambiar algunos parámetros: max_tokens 100 y migrar a gpt-4o-mini, que es más corto y rápido.  
+
+Comencé con un prompt básico para probar la funcionalidad y de a poco le fui agregando detalles al prompt y a la solicitud, como incluir historial, catálogo de marcas y modelos, sucursales, control de financiamiento por morosidad.  
+
 
 ### 3. Ejemplos probados
 Primer prompt:
