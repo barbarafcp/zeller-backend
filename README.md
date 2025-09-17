@@ -36,10 +36,12 @@ OPENAI_API_KEY={apikey}
 ```bash
 npm install
 npm run build
+npx sequelize-cli db:migrate
+npx sequelize-cli db:seed:all
 npm start
 ```
 
-¡Y listo! Funcionando y corriendo.
+¡Y listo! Funcionando y corriendo. Después con solo ejecutar npm run build && npm start es suficiente.
 
 ---
 
