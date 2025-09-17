@@ -6,7 +6,7 @@ module.exports = {
       {
         institution: 'Bank A',
         amount: 5000,
-        dueDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+        dueDate: new Date(new Date().setMonth(new Date().getMonth() - 1)),
         clientId: 1,
         createdAt: new Date(),
         updatedAt: new Date()
